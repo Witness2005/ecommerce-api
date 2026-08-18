@@ -3,22 +3,38 @@ spring:
     name: ecommerce-api
 
   datasource:
-    url:
-    username:
-    password:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME:ecommerce_dev}
+    username: ${DB_USERNAME:ecommerce_user}
+    password: ${DB_PASSWORD:ecommerce_password}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
 
 server:
-  port:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 logging:
   level:
-    root:
+    root: INFO
+    com.ecommerce: DEBUG
+
+jwt:
+  secret: ${JWT_SECRET:my-secret-key-change-in-production-min-32-chars!}
+  expiration:
+    ms: 86400000 # 24 horas
