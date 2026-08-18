@@ -1,0 +1,11 @@
+{
+  "project": "ecommerce-api",
+  "language": "java",
+  "framework": "spring-boot",
+  "javaVersion": "21",
+  "buildTool": "maven",
+  "database": "postgresql",
+  "autoCommit": true,
+  "commitFormat": "conventional",
+  "testRunner": "maven"
+}

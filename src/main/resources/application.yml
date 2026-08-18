@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: ecommerce-api
+
+  datasource:
+    url:
+    username:
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port:
+
+logging:
+  level:
+    root:
