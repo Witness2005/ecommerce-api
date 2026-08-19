@@ -35,6 +35,6 @@ logging:
     com.ecommerce: DEBUG
 
 jwt:
-  secret: ${JWT_SECRET:my-secret-key-change-in-production-min-32-chars!}
+  secret: ${JWT_SECRET:my-secret-key-change-in-production-must-be-at-least-64-bytes-long-for-hs512!}
   expiration:
     ms: 86400000 # 24 horas
