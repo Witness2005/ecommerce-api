@@ -7,15 +7,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryDto {
-
-    private UUID id;
+public class UpdateCategoryRequest {
 
     @NotBlank(message = "Name cannot be blank")
     @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
