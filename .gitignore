@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Scripts locales
+start-docker.sh
+start-project.sh
 ### STS ###
 .apt_generated
 .classpath
