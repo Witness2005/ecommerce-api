@@ -1,12 +1,12 @@
 package com.ecommerce.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -22,9 +22,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -52,10 +54,9 @@ public class User implements UserDetails {
     @NotBlank
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'USER'")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Role role = Role.USER;
+    private List<UserRole> userRoles = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -65,10 +66,27 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    // Roles asignados al usuario (a través de UserRole)
+    public List<Role> getRoles() {
+        return userRoles.stream()
+                .map(UserRole::getRole)
+                .collect(Collectors.toList());
+    }
+
     // UserDetails implementation (para Spring Security)
+    // Cada rol aporta una authority "ROLE_<nombre>" (para hasRole(...)) más una
+    // authority por cada Authority asociada al rol (para hasAuthority(...)).
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return getRoles().stream()
+                .flatMap(role -> {
+                    List<GrantedAuthority> roleAuthorities = new ArrayList<>();
+                    roleAuthorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+                    role.getAuthorities().forEach(authority ->
+                            roleAuthorities.add(new SimpleGrantedAuthority(authority.getName())));
+                    return roleAuthorities.stream();
+                })
+                .collect(Collectors.toList());
     }
 
     // isAccountNonExpired(), isAccountNonLocked(), isCredentialsNonExpired() e isEnabled()

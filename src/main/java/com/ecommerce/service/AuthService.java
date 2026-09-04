@@ -4,7 +4,10 @@ import com.ecommerce.dto.AuthResponse;
 import com.ecommerce.dto.LoginRequest;
 import com.ecommerce.dto.RegisterRequest;
 import com.ecommerce.exception.AuthenticationException;
+import com.ecommerce.model.Role;
 import com.ecommerce.model.User;
+import com.ecommerce.model.UserRole;
+import com.ecommerce.repository.RoleRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +27,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AuthService {
 
+    private static final String DEFAULT_ROLE_NAME = "USER";
+
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
@@ -48,10 +54,19 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
+        // 3. Asignar el rol por defecto (USER)
+        Role defaultRole = roleRepository.findByName(DEFAULT_ROLE_NAME)
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder()
+                                .name(DEFAULT_ROLE_NAME)
+                                .description("Default role granted to new users")
+                                .build()));
+        user.getUserRoles().add(UserRole.builder().user(user).role(defaultRole).build());
+
         userRepository.save(user);
         log.info("New user registered: {}", request.getUsername());
 
-        // 3. Generar token
+        // 4. Generar token
         String token = jwtTokenProvider.generateToken(user);
 
         return AuthResponse.builder()

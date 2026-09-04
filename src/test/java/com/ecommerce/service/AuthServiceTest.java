@@ -3,7 +3,10 @@ package com.ecommerce.service;
 import com.ecommerce.dto.AuthResponse;
 import com.ecommerce.dto.LoginRequest;
 import com.ecommerce.dto.RegisterRequest;
+import com.ecommerce.model.Role;
 import com.ecommerce.model.User;
+import com.ecommerce.model.UserRole;
+import com.ecommerce.repository.RoleRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.security.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,9 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @MockBean
+    private RoleRepository roleRepository;
+
+    @MockBean
     private PasswordEncoder passwordEncoder;
 
     @MockBean
@@ -52,9 +58,12 @@ class AuthServiceTest {
         request.setPassword("password123");
         request.setConfirmPassword("password123");
 
+        Role userRole = Role.builder().name("USER").description("Default role").build();
+
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+        when(roleRepository.findByName("USER")).thenReturn(java.util.Optional.of(userRole));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(jwtTokenProvider.generateToken(any(User.class))).thenReturn("fake-jwt-token");
 
@@ -120,11 +129,13 @@ class AuthServiceTest {
         request.setUsername("existinguser");
         request.setPassword("password123");
 
+        Role userRole = Role.builder().name("USER").description("Default role").build();
         User user = User.builder()
                 .username("existinguser")
                 .email("existing@example.com")
                 .password("encoded-password")
                 .build();
+        user.getUserRoles().add(UserRole.builder().user(user).role(userRole).build());
 
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(user);
