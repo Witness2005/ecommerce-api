@@ -3,6 +3,7 @@ package com.ecommerce.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,11 +51,19 @@ public class User implements UserDetails {
     @Email
     private String email;
 
+    @Column(name = "first_name", length = 100)
+    private String firstName;
+
+    @Column(name = "last_name", length = 100)
+    private String lastName;
+
     @Column(nullable = false)
     @NotBlank
     private String password;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    // EAGER porque getAuthorities() (Spring Security) necesita leer esta colección
+    // fuera de una sesión Hibernate abierta (p. ej. desde JwtAuthenticationFilter).
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<UserRole> userRoles = new ArrayList<>();
 
